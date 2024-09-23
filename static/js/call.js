@@ -54,7 +54,8 @@ let sdpConstraints = {
   offerToReceiveVideo: true,
 };
 
-
+// This below connectSocket() section will create a connection to the WebSocket (Django channels). 
+// Then it listens to the events from the socket. based on the event type, it handles the UI and data.
 let socket;
 let callSocket;
 function connectSocket() {
@@ -149,6 +150,8 @@ function connectSocket() {
   };
 }
 
+
+// We need to send some events to the backend as well. we need to send "Call", "Answer" and "ICECandidates"
 /**
  *
  * @param {Object} data
@@ -209,6 +212,9 @@ function sendICEcandidate(data) {
   );
 }
 
+// The beReady() method will be called, whenever the user have to call or answer a call. 
+// The processCall(), will be called to create an offer 
+// and processAccept is called whenever a user get the call(the offer), and have to create an answer.
 function beReady() {
   return navigator.mediaDevices
     .getUserMedia({
@@ -357,7 +363,7 @@ function stop() {
   document.getElementById("answer").style.display = "none";
   document.getElementById("inCall").style.display = "none";
   document.getElementById("calling").style.display = "none";
-  document.getElementById("endVideoButton").style.display = "none";
+  document.getElementById("videos").style.display = "none";
   otherUser = null;
 }
 

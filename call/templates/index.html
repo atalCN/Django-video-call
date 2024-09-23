@@ -139,6 +139,8 @@
               <h2 style="line-height: 0px">
                 <span id="otherUserNameC"></span>
               </h2>
+              <!-- Adding end call button to the body -->
+              <button id="endCallButton" class="actionButton" onclick="endCall()">End Call</button>
             </div>
           </div>
         </div>
@@ -198,6 +200,10 @@
         document.getElementById("userInfo").style.display = "block";
 
         connectSocket();
+      }
+
+      function endCall() {
+        stop();
       }
     </script>
   </body>
