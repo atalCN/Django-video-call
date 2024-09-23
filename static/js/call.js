@@ -38,12 +38,12 @@ function answer() {
 
 let pcConfig = {
   iceServers: [
-    { url: "stun:stun.jap.bloggernepal.com:5349" },
-    {
-      url: "turn:turn.jap.bloggernepal.com:5349",
-      username: "guest",
-      credential: "somepassword",
-    },
+    // { url: "stun:stun.jap.bloggernepal.com:5349" },
+    // {
+    //   url: "turn:turn.jap.bloggernepal.com:5349",
+    //   username: "guest",
+    //   credential: "somepassword",
+    // },
     { url: "stun:stun.l.google.com:19302" },
   ],
 };
@@ -54,7 +54,6 @@ let sdpConstraints = {
   offerToReceiveVideo: true,
 };
 
-/////////////////////////////////////////////
 
 let socket;
 let callSocket;
@@ -295,7 +294,6 @@ function processAccept() {
   );
 }
 
-/////////////////////////////////////////////////////////
 
 function createPeerConnection() {
   try {
