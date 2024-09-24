@@ -17,10 +17,22 @@
         padding-top: 24px;
         min-height: 90vh;
       }
+
+      #userList {
+        display: none; /* Hide the user list initially */
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 200px;
+        background: #f1f1f1;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
     </style>
 
     <script>
       let myName;
+      let authToken; // To store the authentication token
     </script>
   </head>
 
@@ -38,11 +50,19 @@
             "
           >
             <input
-              placeholder="What should we call you?"
+              placeholder="Username"
               style="text-align: center; height: 50px; font-size: xx-large"
               type="text"
-              name=""
-              id="userNameInput"
+              name="username"
+              id="usernameInput"
+            />
+            <div style="height: 5px"></div>
+            <input
+              placeholder="Password"
+              style="text-align: center; height: 50px; font-size: xx-large"
+              type="password"
+              name="password"
+              id="passwordInput"
             />
             <div style="height: 5px"></div>
             <button onclick="login()" class="actionButton">Login</button>
@@ -61,6 +81,21 @@
           >
             <h1>Hello, <span id="nameHere"></span></h1>
           </div>
+        </div>
+
+        <!-- to display active user -->
+        <div id="userList" 
+            style="display: none;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 200px;
+            background: #f1f1f1;
+            border: 1px solid #ccc;
+            padding: 10px;"
+            >
+          <h3>Active Users</h3>
+          <ul id="userListItems"></ul>
         </div>
 
         <!-- to make a call with name -->
@@ -191,20 +226,44 @@
     </script>
     <script>
       function login() {
-        let userName = document.getElementById("userNameInput").value;
-        myName = userName;
-        document.getElementById("userName").style.display = "none";
-        document.getElementById("call").style.display = "block";
+        let username = document.getElementById("usernameInput").value;
+        let password = document.getElementById("passwordInput").value;
 
-        document.getElementById("nameHere").innerHTML = userName;
-        document.getElementById("userInfo").style.display = "block";
+        fetch("{% url 'login_view' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}", // Include CSRF token
+          },
+          body: JSON.stringify({ username: username, password: password }),
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error("Login failed");
+          }
+        })
+        .then(data => {
+          authToken = data.token; // Store the authentication token
+          console.log(`token: ${username}`, data.token);
+          myName = username;
+          document.getElementById("userName").style.display = "none";
+          document.getElementById("call").style.display = "block";
+          document.getElementById("nameHere").innerHTML = username;
+          document.getElementById("userInfo").style.display = "block";
+          connectSocket(authToken); // Pass token to connectSocket
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert(error);
 
-        connectSocket();
+        });
       }
 
       function endCall() {
         stop();
-      }
+    }
     </script>
   </body>
 </html>

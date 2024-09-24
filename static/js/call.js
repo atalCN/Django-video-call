@@ -38,12 +38,6 @@ function answer() {
 
 let pcConfig = {
   iceServers: [
-    // { url: "stun:stun.jap.bloggernepal.com:5349" },
-    // {
-    //   url: "turn:turn.jap.bloggernepal.com:5349",
-    //   username: "guest",
-    //   credential: "somepassword",
-    // },
     { url: "stun:stun.l.google.com:19302" },
   ],
 };
@@ -58,11 +52,17 @@ let sdpConstraints = {
 // Then it listens to the events from the socket. based on the event type, it handles the UI and data.
 let socket;
 let callSocket;
-function connectSocket() {
+function connectSocket(authToken) {
   let ws_scheme = window.location.protocol == "https:" ? "wss://" : "ws://";
   console.log(ws_scheme);
 
-  callSocket = new WebSocket(ws_scheme + window.location.host + "/ws/call/");
+  // callSocket = new WebSocket(ws_scheme + window.location.host + "/ws/call/");
+
+  // Pass the token as a query parameter
+  // callSocket = new WebSocket(ws_scheme + window.location.host + "/ws/call/?token=" + token);
+
+  // Append token as a query parameter in the WebSocket URL
+  callSocket = new WebSocket(ws_scheme + window.location.host + "/ws/call/?token=" + authToken);
 
   callSocket.onopen = (event) => {
     //let's send myName to the socket
@@ -98,6 +98,11 @@ function connectSocket() {
 
     if (type == "ICEcandidate") {
       onICECandidate(response.data);
+    }
+
+    if (type === "user_list_update") {
+      updateUserList(response.data);
+      console.log('users list: ', response.data)
     }
   };
 
@@ -148,6 +153,19 @@ function connectSocket() {
       iceCandidatesFromCaller.push(candidate);
     }
   };
+
+  // Function to update the user list in the UI
+  function updateUserList(users) {
+    const userListItems = document.getElementById("userListItems");
+    userListItems.innerHTML = ""; // Clear existing list
+
+    users.forEach(user => {
+        const listItem = document.createElement("li");
+        listItem.textContent = user;
+        userListItems.appendChild(listItem);
+    });
+    document.getElementById("userList").style.display = "block";
+};
 }
 
 
