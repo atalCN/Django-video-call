@@ -4,7 +4,7 @@ const baseURL = "/";
 
 let localVideo = document.querySelector("#localVideo");
 let remoteVideo = document.querySelector("#remoteVideo");
-
+let recipient;
 let otherUser;
 let remoteRTCMessage;
 
@@ -52,10 +52,10 @@ let sdpConstraints = {
 // Then it listens to the events from the socket. based on the event type, it handles the UI and data.
 let socket;
 let callSocket;
-function connectSocket(authToken) {
+function connectSocket(authToken, myName) {
   let ws_scheme = window.location.protocol == "https:" ? "wss://" : "ws://";
   console.log(ws_scheme);
-
+  recipient = myName;
   // callSocket = new WebSocket(ws_scheme + window.location.host + "/ws/call/");
 
   // Pass the token as a query parameter
@@ -103,6 +103,11 @@ function connectSocket(authToken) {
     if (type === "user_list_update") {
       updateUserList(response.data);
       console.log('users list: ', response.data)
+    }
+
+    if (type === "sendMessage") {
+      chatMsg(response.data);
+      console.log('users msg: ', response.data)
     }
   };
 
@@ -165,7 +170,39 @@ function connectSocket(authToken) {
         userListItems.appendChild(listItem);
     });
     document.getElementById("userList").style.display = "block";
-};
+  };
+
+  // chat msg update 
+  function chatMsg(data){
+    var div = document.createElement("div");
+    div.innerHTML = data.username + " : " + data.message;
+    document.querySelector("#id_message_send_input").value = "";
+    document.querySelector("#id_chat_item_container").appendChild(div);
+  }
+
+  // send msg from client to server
+  document.querySelector("#id_message_send_input").focus();
+  document.querySelector("#id_message_send_input").onkeyup = function (e) {
+    if (e.keyCode == 13) {
+      document.querySelector("#id_message_send_button").click();
+    }
+  };
+  document.querySelector("#id_message_send_button").onclick = function (e) {
+    var messageInput = document.querySelector(
+      "#id_message_send_input"
+    ).value;
+    console.log('send msg to sender: ', otherUser);
+    callSocket.send(
+      JSON.stringify({
+        type: "chat",
+        data: {
+          message: messageInput, 
+          recipient : recipient,
+          sendto: otherUser
+        }
+      })
+    );
+  };
 }
 
 
@@ -272,6 +309,15 @@ function processCall(userName) {
 }
 
 function processAccept() {
+  console.log('remoteRTCMessage',remoteRTCMessage.sdp)
+  // Modify the SDP if necessary (e.g., adjust codecs for compatibility)
+  let sdp = remoteRTCMessage.sdp;
+
+  // For example, Edge may need changes to certain codecs
+  remoteRTCMessage.sdp = sdp.replace('UDP/TLS/RTP/SAVPF', 'RTP/SAVPF');
+
+  // console.log('sdp changed: ', sdp);
+
   peerConnection.setRemoteDescription(
     new RTCSessionDescription(remoteRTCMessage)
   );
@@ -298,7 +344,7 @@ function processAccept() {
                 console.log(error);
               });
           } catch (error) {
-            console.log(error);
+            console.log('error in processAccept',error);
           }
         }
         iceCandidatesFromCaller = [];

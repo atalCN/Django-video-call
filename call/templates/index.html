@@ -18,16 +18,6 @@
         min-height: 90vh;
       }
 
-      #userList {
-        display: none; /* Hide the user list initially */
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        width: 200px;
-        background: #f1f1f1;
-        border: 1px solid #ccc;
-        padding: 10px;
-    }
     </style>
 
     <script>
@@ -87,14 +77,14 @@
         <div id="userList" 
             style="display: none;
             position: absolute;
-            right: 10px;
+            left: 10px;
             top: 10px;
             width: 200px;
             background: #f1f1f1;
             border: 1px solid #ccc;
             padding: 10px;"
             >
-          <h3>Active Users</h3>
+          <h3>Joined in Room</h3>
           <ul id="userListItems"></ul>
         </div>
 
@@ -174,6 +164,7 @@
               <h2 style="line-height: 0px">
                 <span id="otherUserNameC"></span>
               </h2>
+              <br>
               <!-- Adding end call button to the body -->
               <button id="endCallButton" class="actionButton" onclick="endCall()">End Call</button>
             </div>
@@ -200,6 +191,24 @@
               muted
               playsinline
             ></video>
+            <br>
+            <div id="controls">
+              <button id="toggleVideo" onclick="toggleVideo()">Video Off</button>
+              <button id="toggleMic" onclick="toggleMic()">Mic Off</button>
+            </div>
+            <br>
+            <br>
+            <div
+              class="chat__item__container"
+              id="id_chat_item_container"
+              style="font-size: 20px"
+            >
+              <br />
+              <input type="text" id="id_message_send_input" />
+              <button type="submit" id="id_message_send_button">Send Message</button>
+              <br />
+              <br />
+            </div>
           </div>
           <div id="remoteVideoDiv">
             <video
@@ -252,7 +261,7 @@
           document.getElementById("call").style.display = "block";
           document.getElementById("nameHere").innerHTML = username;
           document.getElementById("userInfo").style.display = "block";
-          connectSocket(authToken); // Pass token to connectSocket
+          connectSocket(authToken, myName); // Pass token to connectSocket
         })
         .catch(error => {
           console.error("Error:", error);
@@ -263,7 +272,31 @@
 
       function endCall() {
         stop();
-    }
+      }
+
+      // Variables to track the status of the video and mic
+      let videoEnabled = false;
+      let audioEnabled = false;
+
+      // Toggle Video function
+      function toggleVideo() {
+        console.log('video track',localStream.getVideoTracks());
+          videoEnabled = !videoEnabled;
+          localStream.getVideoTracks()[0].enabled = videoEnabled; // Enable/Disable video
+
+          // Update the button text based on video status
+          document.getElementById("toggleVideo").textContent = videoEnabled ? "Video Off" : "Video On";
+      }
+
+      // Toggle Mic function
+      function toggleMic() {
+          audioEnabled = !audioEnabled;
+          localStream.getAudioTracks()[0].enabled = audioEnabled; // Enable/Disable microphone
+
+          // Update the button text based on mic status
+          document.getElementById("toggleMic").textContent = audioEnabled ? "Mic Off" : "Mic On";
+      }
+
     </script>
   </body>
 </html>

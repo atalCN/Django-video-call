@@ -128,7 +128,7 @@ class CallConsumer(WebsocketConsumer):
             # we can notify to the group with the caller name
             
             caller = text_data_json['data']['caller']
-            # print(self.my_name, "is answering", caller, "calls.")
+            print(self.my_name, "is answering", caller, "calls.")
 
             async_to_sync(self.channel_layer.group_send)(
                 caller,
@@ -154,6 +154,34 @@ class CallConsumer(WebsocketConsumer):
                 }
             )
 
+        if eventType == 'chat':
+            print('chat recipient: ', text_data_json['data']['recipient'])
+            print(f'chat recipient msg to: ', text_data_json['data']['message'])
+            send_to = text_data_json['data']['sendto']
+            message = text_data_json['data']['message']
+            recipient = text_data_json['data']['recipient']
+            async_to_sync(self.channel_layer.group_send)(
+                send_to,
+                {
+                    'type': 'sendMessage',
+                    'data': {
+                        "message" : message , 
+                        "username" : recipient ,
+                    }
+                }
+            )
+            
+            async_to_sync(self.channel_layer.group_send)(
+                recipient,
+                {
+                    'type': 'sendMessage',
+                    'data': {
+                        "message" : message , 
+                        "username" : recipient ,
+                    }
+                }
+            )
+            
     def call_received(self, event):
 
         # print(event)
@@ -183,5 +211,11 @@ class CallConsumer(WebsocketConsumer):
     def user_list_update(self, event):
         self.send(text_data=json.dumps({
             'type': 'user_list_update',
+            'data': event['data']
+        }))
+        
+    def sendMessage(self , event) :
+        self.send(text_data = json.dumps({
+            'type': 'sendMessage',
             'data': event['data']
         }))
